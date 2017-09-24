@@ -7,11 +7,15 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.request import urlopen
 from urllib.parse import parse_qs
 
+from flask import Flask, redirect, render_template, request, jsonify
+
 import argparse
 import sys
 
 import numpy as np
 import tensorflow as tf
+
+app = Flask(__name__)
 
 def load_graph(model_file):
   graph = tf.Graph()
@@ -57,30 +61,9 @@ def load_labels(label_file):
     label.append(l.rstrip())
   return label
 
-# HTTPRequestHandler class
-class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
-
-  # GET
-  def do_GET(self):
-    # Send response status code
-    self.send_response(200)
-
-    # Send headers
-    self.send_header('Content-type','text/html')
-    self.end_headers()
-
-    # Send message back to client
-    message = "Hello world!"
-    # Write content as utf-8 data
-    self.wfile.write(bytes(message, "utf8"))
-    return
-
-  def do_POST(self):
-    length = int(self.headers['Content-Length'])
-    post_data = parse_qs(self.rfile.read(length).decode('utf-8'))
-    print(post_data["imageUri"][0])
-
-    file_name = post_data["imageUri"][0]
+@app.route('/', methods=['GET', 'POST'])
+def homepage():
+    file_name = request.data["imageUri"][0]
     model_file = "retrained_graph.pb"
     label_file = "retrained_labels.txt"
     input_height = 299
@@ -111,29 +94,13 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
     labels = load_labels(label_file)
     for i in top_k:
       print(labels[i], results[i])
+    return jsonify({'labels': top_k[0]})
 
-    # Send response status code
-    self.send_response(200)
+@app.errorhandler(500)
+def server_error(e):
+    return """
+    An internal server error occurred
+    """, 500
 
-    # Send headers
-    self.send_header('Content-type','text/html')
-    self.end_headers()
-
-    # Send message back to client
-    message = str(top_k)
-    # Write content as utf-8 data
-    self.wfile.write(bytes(message, "utf8"))
-    return
-
-def run():
-  print('starting server...')
-
-  # Server settings
-  # Choose port 8080, for port 80, which is normally used for a http server, you need root access
-  server_address = ('127.0.0.1', 3000)
-  httpd = HTTPServer(server_address, testHTTPServer_RequestHandler)
-  print('running server...')
-  httpd.serve_forever()
-
-
-run()
+if __name__ == '__main__':
+    app.run(host='127.0.0.1', port=8081, debug=True) 
