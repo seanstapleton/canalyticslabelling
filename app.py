@@ -63,39 +63,38 @@ def load_labels(label_file):
 
 @app.route('/', methods=['GET', 'POST'])
 def homepage():
-    print(request.data)
-    file_name = request.data
-    model_file = "retrained_graph.pb"
-    label_file = "retrained_labels.txt"
-    input_height = 299
-    input_width = 299
-    input_mean = 128
-    input_std = 128
-    input_layer = "Mul"
-    output_layer = "final_result"
-
-    graph = load_graph(model_file)
-    t = read_tensor_from_image_file(file_name,
-                                    input_height=input_height,
-                                    input_width=input_width,
-                                    input_mean=input_mean,
-                                    input_std=input_std)
-
-    input_name = "import/" + input_layer
-    output_name = "import/" + output_layer
-    input_operation = graph.get_operation_by_name(input_name);
-    output_operation = graph.get_operation_by_name(output_name);
-
-    with tf.Session(graph=graph) as sess:
-      results = sess.run(output_operation.outputs[0],
-                        {input_operation.outputs[0]: t})
-    results = np.squeeze(results)
-
-    top_k = results.argsort()[-5:][::-1]
-    labels = load_labels(label_file)
-    for i in top_k:
-      print(labels[i], results[i])
-    return jsonify({'labels': top_k[0]})
+    return "Hello, World!"
+    # model_file = "retrained_graph.pb"
+    # label_file = "retrained_labels.txt"
+    # input_height = 299
+    # input_width = 299
+    # input_mean = 128
+    # input_std = 128
+    # input_layer = "Mul"
+    # output_layer = "final_result"
+    #
+    # graph = load_graph(model_file)
+    # t = read_tensor_from_image_file(file_name,
+    #                                 input_height=input_height,
+    #                                 input_width=input_width,
+    #                                 input_mean=input_mean,
+    #                                 input_std=input_std)
+    #
+    # input_name = "import/" + input_layer
+    # output_name = "import/" + output_layer
+    # input_operation = graph.get_operation_by_name(input_name);
+    # output_operation = graph.get_operation_by_name(output_name);
+    #
+    # with tf.Session(graph=graph) as sess:
+    #   results = sess.run(output_operation.outputs[0],
+    #                     {input_operation.outputs[0]: t})
+    # results = np.squeeze(results)
+    #
+    # top_k = results.argsort()[-5:][::-1]
+    # labels = load_labels(label_file)
+    # for i in top_k:
+    #   print(labels[i], results[i])
+    # return jsonify({'labels': top_k[0]})
 
 @app.errorhandler(500)
 def server_error(e):
