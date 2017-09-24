@@ -63,7 +63,8 @@ def load_labels(label_file):
 
 @app.route('/', methods=['GET', 'POST'])
 def homepage():
-    file_name = request.data["imageUri"][0]
+    print(request.data)
+    file_name = request.data
     model_file = "retrained_graph.pb"
     label_file = "retrained_labels.txt"
     input_height = 299
@@ -103,4 +104,4 @@ def server_error(e):
     """, 500
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8081, debug=True) 
+    app.run(host='127.0.0.1', port=8081, debug=True)
